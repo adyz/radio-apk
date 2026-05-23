@@ -25,7 +25,6 @@ public class MainActivity extends Activity {
     private boolean keepScreenAwake;
     private boolean activityResumed;
     private boolean tvDevice;
-    private boolean mediaPlaying;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -268,7 +267,6 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void setMediaPlaying(boolean playing, String title, String artist) {
             runOnUiThread(() -> {
-                mediaPlaying = playing;
                 if (activityResumed) {
                     setScreenAwake(playing);
                 }

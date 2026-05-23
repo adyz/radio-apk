@@ -29,6 +29,7 @@ public class MediaPlaybackService extends Service {
     private MediaSessionCompat mediaSession;
     private String currentTitle = "Radio Coji";
     private String currentArtist = "Live";
+    private boolean isPlaying;
 
     @Override
     public void onCreate() {
@@ -56,6 +57,7 @@ public class MediaPlaybackService extends Service {
         }
 
         MediaButtonReceiver.handleIntent(mediaSession, intent);
+        isPlaying = true;
         setPlaybackState(true);
         startForeground(NOTIFICATION_ID, buildNotification());
         return START_STICKY;
@@ -88,6 +90,7 @@ public class MediaPlaybackService extends Service {
                 i.setAction("coji.ro.action.MEDIA_PLAY");
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(i);
+                isPlaying = true;
                 setPlaybackState(true);
                 updateNotification();
             }
@@ -98,6 +101,7 @@ public class MediaPlaybackService extends Service {
                 i.setAction("coji.ro.action.MEDIA_PAUSE");
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(i);
+                isPlaying = false;
                 setPlaybackState(false);
                 updateNotification();
             }
@@ -152,14 +156,24 @@ public class MediaPlaybackService extends Service {
                         .setShowActionsInCompactView(0)
                 );
 
-        // Add pause action
-        builder.addAction(new NotificationCompat.Action(
-                android.R.drawable.ic_media_pause,
-                "Pause",
-                MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this, PlaybackStateCompat.ACTION_PAUSE
-                )
-        ));
+        // Add play or pause action depending on state
+        if (isPlaying) {
+            builder.addAction(new NotificationCompat.Action(
+                    android.R.drawable.ic_media_pause,
+                    "Pause",
+                    MediaButtonReceiver.buildMediaButtonPendingIntent(
+                            this, PlaybackStateCompat.ACTION_PAUSE
+                    )
+            ));
+        } else {
+            builder.addAction(new NotificationCompat.Action(
+                    android.R.drawable.ic_media_play,
+                    "Play",
+                    MediaButtonReceiver.buildMediaButtonPendingIntent(
+                            this, PlaybackStateCompat.ACTION_PLAY
+                    )
+            ));
+        }
 
         return builder.build();
     }
