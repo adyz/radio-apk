@@ -47,8 +47,18 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
+        // Disable wide view port so content doesn't stretch past the screen
+        settings.setUseWideViewPort(false);
+
+        // Enable built-in zoom controls without displaying the on-screen buttons
+        settings.setBuiltInZoomControls(true);
+        settings.setDisplayZoomControls(false);
+
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
+
+        // Use a custom scale
+        webView.setInitialScale(160);
 
         setContentView(webView);
         webView.loadUrl("https://coji.ro");
