@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'ro.coji.tv'
+    namespace 'coji.ro'
     compileSdk 35
 
     defaultConfig {
-        applicationId 'ro.coji.tv'
+        applicationId 'coji.ro'
         minSdk 23
         targetSdk 35
         versionCode 1

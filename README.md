@@ -1,4 +1,4 @@
-# Coji Android TV
+# Radio Coji
 
 Minimal Android TV / Google TV wrapper for https://coji.ro.
 
