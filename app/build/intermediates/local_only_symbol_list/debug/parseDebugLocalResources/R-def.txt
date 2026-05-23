@@ -1,0 +1,6 @@
+R_DEF: Internal format may change without notice
+local
+drawable app_icon
+drawable banner
+string app_name
+style AppTheme

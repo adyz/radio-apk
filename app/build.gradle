@@ -1,0 +1,16 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'ro.coji.tv'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'ro.coji.tv'
+        minSdk 23
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+}
