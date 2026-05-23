@@ -55,8 +55,29 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (webView != null) {
+            webView.evaluateJavascript(
+                    "document.querySelectorAll('audio, video').forEach(el => { el.pause(); el.currentTime = 0; });",
+                    null
+            );
+            webView.onPause();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (webView != null) {
+            webView.onResume();
+        }
+    }
+
+    @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        // Lasă WebView-ul/site-ul să primească telecomanda: DPAD, OK, Back etc.
         return super.dispatchKeyEvent(event);
     }
 
@@ -65,6 +86,12 @@ public class MainActivity extends Activity {
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
         } else {
+            if (webView != null) {
+                webView.evaluateJavascript(
+                        "document.querySelectorAll('audio, video').forEach(el => { el.pause(); el.currentTime = 0; });",
+                        null
+                );
+            }
             super.onBackPressed();
         }
     }

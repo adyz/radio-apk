@@ -1,7 +1,0 @@
-#Sat May 23 10:31:40 EEST 2026
-base.0=/Users/adrianflorescu/Downloads/coji-android-tv/app/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
-base.1=/Users/adrianflorescu/Downloads/coji-android-tv/app/build/intermediates/dex/debug/mergeProjectDexDebug/12/classes.dex
-path.0=0/classes.dex
-path.1=12/classes.dex
-renamed.0=classes.dex
-renamed.1=classes2.dex
