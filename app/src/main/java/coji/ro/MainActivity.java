@@ -4,9 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.UiModeManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -89,6 +91,12 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleMediaIntent(intent);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         activityResumed = false;
@@ -103,6 +111,7 @@ public class MainActivity extends Activity {
                 );
                 webView.onPause();
             }
+            // On mobile: do NOT pause webView - let audio continue in background
         }
     }
 
@@ -134,7 +143,24 @@ public class MainActivity extends Activity {
                         null
                 );
             }
+            stopMediaService();
             super.onBackPressed();
+        }
+    }
+
+    private void handleMediaIntent(Intent intent) {
+        if (intent == null || webView == null) return;
+        String action = intent.getAction();
+        if ("coji.ro.action.MEDIA_PLAY".equals(action)) {
+            webView.evaluateJavascript(
+                    "document.querySelectorAll('audio, video').forEach(el => { if(el.paused) el.play(); });",
+                    null
+            );
+        } else if ("coji.ro.action.MEDIA_PAUSE".equals(action)) {
+            webView.evaluateJavascript(
+                    "document.querySelectorAll('audio, video').forEach(el => { if(!el.paused) el.pause(); });",
+                    null
+            );
         }
     }
 
@@ -156,6 +182,33 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void startMediaService() {
+        if (tvDevice) return;
+        Intent serviceIntent = new Intent(this, MediaPlaybackService.class);
+        serviceIntent.setAction(MediaPlaybackService.ACTION_START);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
+    }
+
+    private void stopMediaService() {
+        if (tvDevice) return;
+        Intent serviceIntent = new Intent(this, MediaPlaybackService.class);
+        serviceIntent.setAction(MediaPlaybackService.ACTION_STOP);
+        startService(serviceIntent);
+    }
+
+    private void updateMediaMetadata(String title, String artist) {
+        if (tvDevice) return;
+        Intent serviceIntent = new Intent(this, MediaPlaybackService.class);
+        serviceIntent.setAction(MediaPlaybackService.ACTION_UPDATE_METADATA);
+        serviceIntent.putExtra(MediaPlaybackService.EXTRA_TITLE, title);
+        serviceIntent.putExtra(MediaPlaybackService.EXTRA_ARTIST, artist);
+        startService(serviceIntent);
+    }
+
     private void injectMediaPlaybackObserver() {
         if (webView == null) {
             return;
@@ -172,8 +225,14 @@ public class MainActivity extends Activity {
                         + "  var playing = Array.prototype.some.call(document.querySelectorAll('audio, video'), function(el) {"
                         + "    return !el.paused && !el.ended;"
                         + "  });"
+                        + "  var title = 'Radio Coji';"
+                        + "  var artist = 'Live';"
+                        + "  if (navigator.mediaSession && navigator.mediaSession.metadata) {"
+                        + "    title = navigator.mediaSession.metadata.title || title;"
+                        + "    artist = navigator.mediaSession.metadata.artist || artist;"
+                        + "  }"
                         + "  if (window.CojiAndroid && window.CojiAndroid.setMediaPlaying) {"
-                        + "    window.CojiAndroid.setMediaPlaying(playing);"
+                        + "    window.CojiAndroid.setMediaPlaying(playing, title, artist);"
                         + "  }"
                         + "};"
                         + "function bind(el) {"
@@ -206,10 +265,18 @@ public class MainActivity extends Activity {
 
     private class MediaPlaybackBridge {
         @JavascriptInterface
-        public void setMediaPlaying(boolean playing) {
+        public void setMediaPlaying(boolean playing, String title, String artist) {
             runOnUiThread(() -> {
                 if (activityResumed) {
                     setScreenAwake(playing);
+                }
+                if (!tvDevice) {
+                    if (playing) {
+                        updateMediaMetadata(title, artist);
+                        startMediaService();
+                    } else {
+                        stopMediaService();
+                    }
                 }
             });
         }

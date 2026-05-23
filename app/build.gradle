@@ -14,3 +14,8 @@ android {
         versionName '1.0'
     }
 }
+
+dependencies {
+    implementation 'androidx.media:media:1.7.0'
+    implementation 'androidx.core:core:1.15.0'
+}
